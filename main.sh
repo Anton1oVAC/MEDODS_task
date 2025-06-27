@@ -44,12 +44,14 @@ else
 	exit 1
 fi 	
 
-# Распределение по файлам, + удаление постфиксов 
+
+
+# Удаление постфиксов + сохр готового результата
 awk -v failed_file="$FAILED_FILE" -v running_file="$RUNNING_FILE" '
-NR > 1 {  # Пропускаем заголовок
-    # Удаляем все постфиксы вида -xxxxx (включая цифры и буквы разной длины)
+NR > 1 {
+   	# Удаляем только постфикс вида -xxxxxxxxxx-xxxxxx в конце строки
     service_name = $1
-    sub(/-[^-]+(-[^-]+)?$/, "", service_name)
+    sub(/-[a-zA-Z0-9]{8,10}-[a-zA-Z0-9]{5,6}$/, "", service_name)
     
     if ($3 == "Error" || $3 == "CrashLoopBackOff") {
         print service_name >> failed_file
@@ -71,7 +73,7 @@ if [[ !  -s "$FAILED_FILE" ]]; then
 	touch $FAILED_FILE
 fi 
 
-\
+
 echo "Готово! Результаты сохранены в:"
 echo "- $FAILED_FILE ($(wc -l < "$FAILED_FILE") сервисов с ошибками)"
 echo "- $RUNNING_FILE ($(wc -l < "$RUNNING_FILE") работающих сервисов)"
