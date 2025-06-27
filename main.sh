@@ -1,19 +1,33 @@
 #!bin/bash
 
-LINK=https://raw.githubusercontent.com/GreatMedivack/files/master/list.out
-FILE=test.out
+# аргумент
+SERVER=$1
 
-# 
-ALPHABET='[^a-zA-Z]+'
-NUMBER='[^0-9]+'
+
+# Обработка арг
+if [[ -z "$1" ]]; then
+    SERVER=$(whoami)
+else
+    SERVER="$1"
+fi
+
+# Проверка длины арг
+if [[ ${#SERVER} -gt 20 ]]; then
+    echo "Ошибка: Максимум 20 символов" >&2
+    exit 1
+fi
+
+
+LINK=https://raw.githubusercontent.com/GreatMedivack/files/master/list.out
+FILE=${SERVER}.out
 
 DATE=$(date +"%d_%m_%Y")
 
-# параметр
-SERVER=$1
-
 RUNNING_FILE=${SERVER}_${DATE}_running.out
 FAILED_FILE=${SERVER}_${DATE}_failed.out
+
+#ALPHABET='[^a-zA-Z]+'
+#NUMBER='[^0-9]+'
 
 
 
@@ -32,7 +46,7 @@ fi
 # загрузка данных и сохр. в файл
 if curl --silent --fail "$LINK" --output "$FILE"; then
 	if [[ -s "$FILE" ]]; then
-		echo "Данные сохр в "$TEST""
+		echo "Данные сохр в "$FILE""
 		echo "Размер файла: $(wc -l < "$FILE") строк"
 	else
 		echo "Ошибка: файл пустой" >&2
@@ -43,7 +57,6 @@ else
 	echo "Ошибка при загрузке данных" >&2
 	exit 1
 fi 	
-
 
 
 # Удаление постфиксов + сохр готового результата
@@ -73,14 +86,6 @@ if [[ !  -s "$FAILED_FILE" ]]; then
 	touch $FAILED_FILE
 fi 
 
-
 echo "Готово! Результаты сохранены в:"
 echo "- $FAILED_FILE ($(wc -l < "$FAILED_FILE") сервисов с ошибками)"
 echo "- $RUNNING_FILE ($(wc -l < "$RUNNING_FILE") работающих сервисов)"
-
-
-
-
-
-
-
