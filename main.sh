@@ -53,7 +53,7 @@ if curl --silent --fail "$LINK" --output "$FILE"; then
 		exit 1
 	fi
 else
-	echo "Ошибка при загрузке данных" >&2
+	echo "Ошибка: загрузка данных" >&2
 	exit 1
 fi 	
 
@@ -105,7 +105,7 @@ fi
 if [[ ! -d "archives" ]]; then
 	mkdir -p archives
 else
-	echo "Папка уже существует"
+	echo "Предупреждение: Папка уже существует"
 fi
 
 ARCH_NAME=${SERVER}_${DATE}.zip
@@ -115,6 +115,15 @@ if [[ ! -f "archives/$ARCH_NAME" ]]; then
 	echo "Архив создан"
 	rm -rf *.out
 else
-	echo "Архив с именем $ARCHIVE_NAME уже существует"
+	echo "Предупреждение: Архив с именем $ARCHIVE_NAME уже существует"
 	rm -rf *.out
+fi
+
+
+# Проверка архива на повреждение
+if zip -T "archives/$ARCH_NAME"; then
+	echo "Архив $ARCH_NAME цел"
+else
+	echo "Ошибка: Архив $ARCHIVE_NAME поврежден"
+	exit 1
 fi
