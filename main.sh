@@ -11,7 +11,7 @@ else
     SERVER="$1"
 fi
 
-# Проверка длины арг
+# Макс. длина арг
 if [[ ${#SERVER} -gt 20 ]]; then
     echo "Ошибка: Максимум 20 символов" >&2
     exit 1
@@ -26,10 +26,7 @@ DATE=$(date +"%d_%m_%Y")
 
 RUNNING_FILE=${SERVER}_${DATE}_running.out
 FAILED_FILE=${SERVER}_${DATE}_failed.out
-
 REPORT_FILE=${SERVER}_${DATE}_report.out
-#ALPHABET='[^a-zA-Z]+'
-#NUMBER='[^0-9]+'
 
 
 
@@ -87,22 +84,37 @@ FAILED_COUNT=$(wc -l < "$FAILED_FILE")
     echo "Дата: $DATE"
 } > "$REPORT_FILE"
 
-chmod 700 ${REPORT_FILE}
-
+chmod 644 ${REPORT_FILE}
 
 
 # Проверка на созд файлы
 if [[ !  -s "$RUNNING_FILE" ]]; then
 	echo "Предупреждение: Файл "$RUNNING_FILE" не создан!"
-	#touch $RUNNING_FILE
 fi
 
 if [[ !  -s "$FAILED_FILE" ]]; then
 	echo "Предупреждение: Файл "$FAILED_FILE" не создан!"
-	#touch $FAILED_FILE
 fi 
 
 if [[ ! -s "$REPORT_FILE" ]]; then
 	echo "Предупреждение: Файл "$REPORT_FILE" не создан!"
-	#touch $FAIED_FILE
+fi
+
+
+# Создание архива и перенос файлов в архив, удаление лишнего
+if [[ ! -d "archives" ]]; then
+	mkdir -p archives
+else
+	echo "Папка уже существует"
+fi
+
+ARCH_NAME=${SERVER}_${DATE}.zip
+
+if [[ ! -f "archives/$ARCH_NAME" ]]; then
+	zip archives/$ARCH_NAME "$FILE" "$RUNNING_FILE" "$FAILED_FILE" "$REPORT_FILE"
+	echo "Архив создан"
+	rm -rf *.out
+else
+	echo "Архив с именем $ARCHIVE_NAME уже существует"
+	rm -rf *.out
 fi
