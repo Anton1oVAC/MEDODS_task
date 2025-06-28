@@ -18,6 +18,7 @@ if [[ ${#SERVER} -gt 20 ]]; then
 fi
 
 
+
 LINK=https://raw.githubusercontent.com/GreatMedivack/files/master/list.out
 FILE=${SERVER}.out
 
@@ -26,6 +27,7 @@ DATE=$(date +"%d_%m_%Y")
 RUNNING_FILE=${SERVER}_${DATE}_running.out
 FAILED_FILE=${SERVER}_${DATE}_failed.out
 
+REPORT_FILE=${SERVER}_${DATE}_report.out
 #ALPHABET='[^a-zA-Z]+'
 #NUMBER='[^0-9]+'
 
@@ -59,10 +61,10 @@ else
 fi 	
 
 
-# Удаление постфиксов + сохр готового результата
+# Удаление постфиксов и распред. по статусу 
 awk -v failed_file="$FAILED_FILE" -v running_file="$RUNNING_FILE" '
 NR > 1 {
-   	# Удаляем только постфикс вида -xxxxxxxxxx-xxxxxx в конце строки
+   	# Удаление постфикс вида -xxxxxxxxxx-xxxxxx
     service_name = $1
     sub(/-[a-zA-Z0-9]{8,10}-[a-zA-Z0-9]{5,6}$/, "", service_name)
     
@@ -75,17 +77,32 @@ NR > 1 {
 }' "$FILE"
 
 
-# Проверка на созд файлы и они не пусты
+# Файл отчета
+RUNNING_COUNT=$(wc -l < "$RUNNING_FILE")
+FAILED_COUNT=$(wc -l < "$FAILED_FILE")
+{
+    echo "Работающие сервисы: $RUNNING_COUNT"
+    echo "Сервисы с ошибками: $FAILED_COUNT"
+    echo "Пользователь: $SERVER"
+    echo "Дата: $DATE"
+} > "$REPORT_FILE"
+
+chmod 700 ${REPORT_FILE}
+
+
+
+# Проверка на созд файлы
 if [[ !  -s "$RUNNING_FILE" ]]; then
-	echo "Предупреждение: нету запущенных сервисов"
-	touch $RUNNING_FILE
+	echo "Предупреждение: Файл "$RUNNING_FILE" не создан!"
+	#touch $RUNNING_FILE
 fi
 
 if [[ !  -s "$FAILED_FILE" ]]; then
-	echo "Предупреждение: нету неработающих сервисов"
-	touch $FAILED_FILE
+	echo "Предупреждение: Файл "$FAILED_FILE" не создан!"
+	#touch $FAILED_FILE
 fi 
 
-echo "Готово! Результаты сохранены в:"
-echo "- $FAILED_FILE ($(wc -l < "$FAILED_FILE") сервисов с ошибками)"
-echo "- $RUNNING_FILE ($(wc -l < "$RUNNING_FILE") работающих сервисов)"
+if [[ ! -s "$REPORT_FILE" ]]; then
+	echo "Предупреждение: Файл "$REPORT_FILE" не создан!"
+	#touch $FAIED_FILE
+fi
