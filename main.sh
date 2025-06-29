@@ -17,16 +17,22 @@ if [[ ${#SERVER} -gt 20 ]]; then
     exit 1
 fi
 
+# Проверка на доп. символы
+if [[ ! "$SERVER" =~ ^[[:alnum:]_-]+$ ]]; then
+    echo "Ошибка: Недопустимые символы в имени сервера" >&2
+    exit 1
+fi
 
 
-LINK=https://raw.githubusercontent.com/GreatMedivack/files/master/list.out
-FILE=${SERVER}.out
 
-DATE=$(date +"%d_%m_%Y")
+LINK="https://raw.githubusercontent.com/GreatMedivack/files/master/list.out"
+FILE="${SERVER}.out"
 
-RUNNING_FILE=${SERVER}_${DATE}_running.out
-FAILED_FILE=${SERVER}_${DATE}_failed.out
-REPORT_FILE=${SERVER}_${DATE}_report.out
+DATE="$(date +"%d_%m_%Y")"
+
+RUNNING_FILE="${SERVER}_${DATE}_running.out"
+FAILED_FILE="${SERVER}_${DATE}_failed.out"
+REPORT_FILE="${SERVER}_${DATE}_report.out"
 
 
 
@@ -45,7 +51,7 @@ fi
 # загрузка данных и сохр. в файл
 if curl --silent --fail "$LINK" --output "$FILE"; then
 	if [[ -s "$FILE" ]]; then
-		echo "Данные сохр в "$FILE""
+		echo "Данные сохр в $FILE"
 		echo "Размер файла: $(wc -l < "$FILE") строк"
 	else
 		echo "Ошибка: файл пустой" >&2
@@ -75,8 +81,8 @@ NR > 1 {
 
 
 # Файл отчета
-RUNNING_COUNT=$(wc -l < "$RUNNING_FILE")
-FAILED_COUNT=$(wc -l < "$FAILED_FILE")
+RUNNING_COUNT="$(wc -l < "$RUNNING_FILE")"
+FAILED_COUNT="$(wc -l < "$FAILED_FILE")"
 {
     echo "Работающие сервисы: $RUNNING_COUNT"
     echo "Сервисы с ошибками: $FAILED_COUNT"
@@ -84,20 +90,20 @@ FAILED_COUNT=$(wc -l < "$FAILED_FILE")
     echo "Дата: $DATE"
 } > "$REPORT_FILE"
 
-chmod 644 ${REPORT_FILE}
+chmod 644 "${REPORT_FILE}"
 
 
 # Проверка на созд файлы
 if [[ !  -s "$RUNNING_FILE" ]]; then
-	echo "Предупреждение: Файл "$RUNNING_FILE" не создан!"
+	echo "Предупреждение: Файл $RUNNING_FILE не создан!"
 fi
 
 if [[ !  -s "$FAILED_FILE" ]]; then
-	echo "Предупреждение: Файл "$FAILED_FILE" не создан!"
+	echo "Предупреждение: Файл $FAILED_FILE не создан!"
 fi 
 
 if [[ ! -s "$REPORT_FILE" ]]; then
-	echo "Предупреждение: Файл "$REPORT_FILE" не создан!"
+	echo "Предупреждение: Файл $REPORT_FILE не создан!"
 fi
 
 
@@ -108,15 +114,15 @@ else
 	echo "Предупреждение: Папка уже существует"
 fi
 
-ARCH_NAME=${SERVER}_${DATE}.zip
+ARCH_NAME="${SERVER}_${DATE}.zip"
 
 if [[ ! -f "archives/$ARCH_NAME" ]]; then
 	zip archives/$ARCH_NAME "$FILE" "$RUNNING_FILE" "$FAILED_FILE" "$REPORT_FILE"
 	echo "Архив создан"
-	rm -rf *.out
+	rm -f "$FILE" "$RUNNING_FILE" "$FAILED_FILE" "$REPORT_FILE"
 else
-	echo "Предупреждение: Архив с именем $ARCHIVE_NAME уже существует"
-	rm -rf *.out
+	echo "Предупреждение: Архив с именем $ARCH_NAME уже существует"
+	rm -f "$FILE" "$RUNNING_FILE" "$FAILED_FILE" "$REPORT_FILE"
 fi
 
 
@@ -124,6 +130,6 @@ fi
 if zip -T "archives/$ARCH_NAME"; then
 	echo "Архив $ARCH_NAME цел"
 else
-	echo "Ошибка: Архив $ARCHIVE_NAME поврежден"
+	echo "Ошибка: Архив $ARCH_NAME поврежден"
 	exit 1
 fi
